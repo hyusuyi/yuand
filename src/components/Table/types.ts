@@ -90,8 +90,6 @@ export interface ProTableProps<Tdata = any>
     onBefore?: () => any;
     onSuccess?: (data: any) => any;
   };
-  // api url
-  url: string;
   //Table.useTable()实例,  返回状态库，常用方法
   table: TableInstance<Tdata> | null;
   // rowKey: string | ((record: RecordType, index?: number) => string);
@@ -105,8 +103,6 @@ export interface ProTableProps<Tdata = any>
   manual?: boolean;
   //是否不含className
   nostyle?: boolean;
-  //发起请求时附加参数
-  params?: RecordType;
   //antd table columns 支持函数返回一个列数组:参数data api返回数据,  一般使用function 时用于根据data，动态生成列
   columns:
     | ((data: Tdata) => TableColumnType<unknown>[])
@@ -118,17 +114,12 @@ export interface ProTableProps<Tdata = any>
   //操作按钮组,独立成一行
   toolbar?: React.ReactNode;
   pageSizeOptions?: number[];
-  //发送请求前
-  onBefore?: () => void;
-  //请求成功后
-  onSuccess?: (data: Tdata) => any;
   pagination?: {
     showQuickJumper?: boolean;
     showSizeChanger?: boolean;
     hideOnSinglePage?: boolean;
   };
   loadingDelay?: number;
-  method?: HttpMethod;
   //开启后 useStore()会返回 api data数据
   useData?: boolean;
 }
