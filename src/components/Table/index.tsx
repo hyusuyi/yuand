@@ -5,7 +5,7 @@ import { I18nContext, t } from "../TableConfig";
 import { useShallow } from "zustand/react/shallow";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useContext } from "react";
-import { Table, Form, Button, Space, PaginationProps } from "antd";
+import { Table, Form, Button, Space, type PaginationProps } from "antd";
 import { isObject } from "../../utils/util";
 import {
   getDataSource,

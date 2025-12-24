@@ -1,7 +1,7 @@
 import type { ProTableProps, ProTableConfigOptions } from "./types";
 import { useShallow } from "zustand/react/shallow";
 import { useEffect, useMemo } from "react";
-import { Table, Form, Button, Space } from "antd";
+import { Table, Form, Button, Space, type PaginationProps } from "antd";
 import {
   getDataSource,
   getQuery,
@@ -15,27 +15,45 @@ import useX from "../../hooks/useX";
 import useTable from "./useTable";
 import "./style.css";
 
-const defaultClassNames = {
-  root: "main-container",
-  form: "search-form",
-  table: "main-table",
-};
-const defaultStyles = {
-  root: {},
-  form: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  table: {},
-  toolbar: {
-    marginBottom: 15,
-  },
+// 统一默认配置管理
+type DefaultConfig = {
+  classNames: {
+    root: string;
+    form: string;
+    table: string;
+  };
+  styles: {
+    root: React.CSSProperties;
+    form: React.CSSProperties;
+    table: React.CSSProperties;
+    toolbar: React.CSSProperties;
+  };
+  pagination: PaginationProps;
 };
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+const DEFAULT_CONFIG: DefaultConfig = {
+  classNames: {
+    root: "main-container",
+    form: "search-form",
+    table: "main-table",
+  },
+  styles: {
+    root: {},
+    form: { display: "flex", justifyContent: "space-between" },
+    table: {},
+    toolbar: { marginBottom: 15 },
+  },
+  pagination: {
+    showQuickJumper: true,
+    showSizeChanger: true,
+    hideOnSinglePage: false,
+  },
+} as const;
+
 const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   const {
-    classNames = defaultClassNames,
-    styles = defaultStyles,
+    classNames = DEFAULT_CONFIG.classNames,
+    styles = DEFAULT_CONFIG.styles,
     table,
     locale,
     dataKey = "data",
@@ -46,16 +64,13 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
     form = {},
     alert,
     toolbar = null,
-    pagination,
+    pagination = DEFAULT_CONFIG.pagination,
     scroll,
     ...prop
   } = props;
-
-  pagination.showQuickJumper ??= true;
-  pagination.showSizeChanger ??= true;
-  pagination.hideOnSinglePage ??= false;
-  pagination.pageSizeOptions ??= ProTable.pageSizeOptions;
   pagination.showTotal ??= (total: number) => `共 ${total} 条记录`;
+  pagination.pageSizeOptions ??= ProTable.pageSizeOptions;
+
   const {
     title: formTitle,
     extra: formExtra,
@@ -155,6 +170,11 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
         ready: true,
       });
     }
+  }, []);
+  useEffect(() => {
+    return () => {
+      table.resetStore();
+    };
   }, [table]);
 
   const onFinish = (values: Record<string, unknown>) => {
@@ -202,12 +222,12 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
 
   return (
     <div
-      className={classNames?.root ?? defaultClassNames.root}
+      className={classNames?.root ?? DEFAULT_CONFIG.classNames.root}
       style={styles.root}
     >
       {!!formItems && (
         <div
-          className={classNames?.form ?? defaultClassNames.form}
+          className={classNames?.form ?? DEFAULT_CONFIG.classNames.form}
           style={styles.form}
         >
           <Form
@@ -234,7 +254,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
         </div>
       )}
       <div
-        className={classNames?.table ?? defaultClassNames.table}
+        className={classNames?.table ?? DEFAULT_CONFIG.classNames.table}
         style={styles.table}
       >
         {toolbar && <div style={styles.toolbar}>{toolbar}</div>}
