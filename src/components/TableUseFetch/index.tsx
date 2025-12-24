@@ -31,6 +31,7 @@ const defaultStyles = {
     marginBottom: 15,
   },
 };
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   const {
     classNames = defaultClassNames,
@@ -39,26 +40,27 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
     locale,
     dataKey = "data",
     totalKey = "total",
-    manual = false,
     nostyle,
     request = {},
     columns,
     form = {},
     alert,
     toolbar = null,
-    pageSizeOptions = [10, 20, 50, 100],
     pagination,
-    loadingDelay = 300,
     scroll,
     ...prop
   } = props;
 
+  pagination.showQuickJumper ??= true;
+  pagination.showSizeChanger ??= true;
+  pagination.hideOnSinglePage ??= false;
+  pagination.pageSizeOptions ??= ProTable.pageSizeOptions;
+  pagination.showTotal ??= (total: number) => `共 ${total} 条记录`;
   const {
     title: formTitle,
     extra: formExtra,
     right: formRight,
-    formItem,
-    items,
+    items: formItems,
     reset: formReset,
     dataForm,
     handleValues: formHandleValues,
@@ -66,7 +68,6 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
     ...otherFormProps
   } = form;
 
-  const formItems = formItem || items;
   const { data, page, size, sorter, search, ready, setState } = table.useStore(
     useShallow((state) => {
       return {
@@ -101,7 +102,6 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
         data,
       });
     },
-    loadingDelay,
   });
 
   const { dataSource, total, column, renderAlert } = useMemo(() => {
@@ -124,7 +124,9 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   };
   const onReset = () => {
     setState({
-      size: 10,
+      size:
+        (pagination?.pageSizeOptions?.[0] as number) ??
+        ProTable.pageSizeOptions[0],
       sorter: {},
     });
     if (formItems) {
@@ -145,7 +147,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
     };
   }
   useEffect(() => {
-    if (manual) return;
+    if (request.manual) return;
     if (formItems) {
       table.form.submit();
     } else {
@@ -189,14 +191,8 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
         pagination={{
           current: page,
           pageSize: size,
-          showQuickJumper: pagination ? pagination.showQuickJumper : true,
-          showSizeChanger: pagination ? pagination.showSizeChanger : true,
-          hideOnSinglePage: pagination ? pagination.hideOnSinglePage : false,
-          pageSizeOptions,
           total,
-          showTotal(total) {
-            return `共 ${total} 条记录`;
-          },
+          ...pagination,
         }}
         dataSource={dataSource}
         {...prop}
@@ -266,8 +262,14 @@ ProTable.getQuery = (options) => {
 };
 ProTable.formatDate = formatDate;
 ProTable.removeEmpty = removeEmpty;
-ProTable.pageSizeOptions = [10, 20, 50, 100];
-//自定义配置参数组合方式.  默认提供 page,size，orderField，isAsc，...urlParams,...search
+ProTable.pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS;
+
+/**
+ * 自定义配置参数组合方式.
+ * getQuery函数配置默认提供 page,size，orderField，isAsc，...params,...search
+ * @param options
+ * @returns
+ */
 ProTable.config = (options: ProTableConfigOptions) => {
   if (!options || !isObject(options)) return;
   if (options.getQuery) {

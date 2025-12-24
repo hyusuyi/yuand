@@ -5,7 +5,7 @@ import { I18nContext, t } from "../TableConfig";
 import { useShallow } from "zustand/react/shallow";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useContext } from "react";
-import { Table, Form, Button, Space } from "antd";
+import { Table, Form, Button, Space, PaginationProps } from "antd";
 import { isObject } from "../../utils/util";
 import {
   getDataSource,
@@ -18,55 +18,72 @@ import useX from "../../hooks/useX";
 import useTable from "./useTable";
 import "./style.css";
 
-const defaultClassNames = {
-  root: "main-container",
-  form: "search-form",
-  table: "main-table",
+// 统一默认配置管理
+type DefaultConfig = {
+  classNames: {
+    root: string;
+    form: string;
+    table: string;
+  };
+  styles: {
+    root: React.CSSProperties;
+    form: React.CSSProperties;
+    table: React.CSSProperties;
+    toolbar: React.CSSProperties;
+  };
+  pagination: PaginationProps;
 };
-const defaultStyles = {
-  root: {},
-  form: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  table: {},
-  toolbar: {
-    marginBottom: 15,
-  },
-};
-
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+const DEFAULT_CONFIG: DefaultConfig = {
+  classNames: {
+    root: "main-container",
+    form: "search-form",
+    table: "main-table",
+  },
+  styles: {
+    root: {},
+    form: { display: "flex", justifyContent: "space-between" },
+    table: {},
+    toolbar: { marginBottom: 15 },
+  },
+  pagination: {
+    showQuickJumper: true,
+    showSizeChanger: true,
+    hideOnSinglePage: false,
+  },
+} as const;
+
 const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   const {
     request = {},
-    classNames = defaultClassNames,
-    styles = defaultStyles,
+    classNames = DEFAULT_CONFIG.classNames,
+    styles = DEFAULT_CONFIG.styles,
     table,
     locale,
     dataKey = "data",
     totalKey = "total",
-    manual = false,
     nostyle,
     columns,
     form = {},
     alert,
     toolbar = null,
-    pageSizeOptions,
-    pagination,
+    pagination = DEFAULT_CONFIG.pagination,
     scroll,
     useData,
     ...prop
   } = props;
 
   const { lang } = useContext(I18nContext);
+  pagination.showTotal ??= (total: number) =>
+    `${t("共", lang)} ${total} ${t("条记录", lang)}`;
+  pagination.pageSizeOptions ??= ProTable.pageSizeOptions;
 
   const {
     title: formTitle,
     extra: formExtra,
     right: formRight,
-    formItem,
     layout = "inline",
-    items,
+    items: formItems,
     reset: formReset,
     dataForm,
     handleValues: formHandleValues,
@@ -74,7 +91,6 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
     ...otherFormProps
   } = form;
   const forceKey = useRef(0);
-  const formItems = formItem || items;
   const queryClient = useQueryClient();
   const { page, size, sorter, search, ready, setState } = table.useStore(
     useShallow((state) => {
@@ -129,7 +145,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
         data,
       });
     }
-  }, [data]);
+  }, [data, useData]);
 
   const { dataSource, total, column, renderAlert } = useMemo(() => {
     return {
@@ -151,7 +167,9 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   };
   const onReset = () => {
     setState({
-      size: pageSizeOptions?.[0] || ProTable.pageSizeOptions[0],
+      size:
+        (pagination?.pageSizeOptions?.[0] as number) ??
+        ProTable.pageSizeOptions[0],
       sorter: {},
     });
     if (formItems) {
@@ -162,23 +180,20 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
       }
     }
   };
+  if (table) {
+    table.queryKey = queryKey;
+    table.clear = () => queryClient.setQueryData(queryKey, {});
+    table.run = onSearch;
+    table.refresh = refetch;
+    table.reset = () => {
+      if (formItems) {
+        onReset();
+      }
+    };
+  }
 
   useEffect(() => {
-    if (table) {
-      table.run = onSearch;
-      table.queryKey = queryKey;
-      table.clear = () => queryClient.setQueryData(queryKey, {});
-      table.refresh = refetch;
-      table.reset = () => {
-        if (formItems) {
-          onReset();
-        }
-      };
-    }
-  }, [table, queryKey]);
-
-  useEffect(() => {
-    if (manual) return;
+    if (request.manual) return;
     if (formItems) {
       table.form.submit();
     } else {
@@ -229,14 +244,8 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
         pagination={{
           current: page,
           pageSize: size,
-          showQuickJumper: pagination ? pagination.showQuickJumper : true,
-          showSizeChanger: pagination ? pagination.showSizeChanger : true,
-          hideOnSinglePage: pagination ? pagination.hideOnSinglePage : false,
-          pageSizeOptions: pageSizeOptions || ProTable.pageSizeOptions,
           total,
-          showTotal(total) {
-            return `${t("共", lang)} ${total} ${t("条记录", lang)}`;
-          },
+          ...pagination,
         }}
         dataSource={dataSource}
         {...prop}
@@ -246,12 +255,12 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
 
   return (
     <div
-      className={classNames?.root ?? defaultClassNames.root}
+      className={classNames?.root ?? DEFAULT_CONFIG.classNames.root}
       style={styles.root}
     >
       {!!formItems && (
         <div
-          className={classNames?.form ?? defaultClassNames.form}
+          className={classNames?.form ?? DEFAULT_CONFIG.classNames.form}
           style={styles.form}
         >
           <Form
@@ -278,7 +287,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
         </div>
       )}
       <div
-        className={classNames?.table ?? defaultClassNames.table}
+        className={classNames?.table ?? DEFAULT_CONFIG.classNames.table}
         style={styles.table}
       >
         {toolbar && <div style={styles.toolbar}>{toolbar}</div>}
@@ -299,7 +308,12 @@ ProTable.formatDate = formatDate;
 ProTable.removeEmpty = removeEmpty;
 ProTable.pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS;
 
-//自定义配置参数组合方式.  默认提供 page,size，orderField，isAsc，...params,...search
+/**
+ * 自定义配置参数组合方式.
+ * getQuery函数配置默认提供 page,size，orderField，isAsc，...params,...search
+ * @param options
+ * @returns
+ */
 ProTable.config = (options: ProTableConfigOptions) => {
   if (!options || !isObject(options)) return;
   if (options.getQuery) {

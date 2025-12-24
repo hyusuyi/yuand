@@ -3,6 +3,7 @@ import type {
   TableColumnType,
   TableProps,
   FormProps,
+  PaginationProps,
 } from "antd";
 import type { HttpMethod } from "../../fetch";
 import type { UseBoundStore, StoreApi } from "zustand";
@@ -28,15 +29,15 @@ export interface TableState<TData = any> {
 type UseStoreType<TData> = UseBoundStore<StoreApi<TableState<TData>>>;
 export interface TableInstance<TData = any> {
   useStore: UseStoreType<TData>;
-  // useQuery : queryKey
+  //useQuery : queryKey
   queryKey: any[];
-  //执行搜索
+  //开始搜索
   run: () => void;
   //清除列表数据
   clear: () => void;
-  //api 刷新会保留当前所有搜索参数
+  //刷新请求并保留当前所有搜索参数 queryKey不变
   refresh: () => void;
-  //重置所有参数并搜索,仅在传入form时生效
+  //重置所有参数并搜索,仅在配置form属性时生效
   reset: () => void;
   //排序  table.sortOrder('列名')
   sortOrder: (key: string) => any;
@@ -50,20 +51,18 @@ interface FormOptions extends Omit<FormProps, "form" | "title" | "children"> {
   //form左侧标题
   title?: React.ReactNode;
   //form items 表单项
-  /** @deprecated 此属性已废弃，请使用新的formItem属性代替 */
   items?: React.ReactNode | React.ReactNode[];
-  formItem?: React.ReactNode | React.ReactNode[];
   //扩展内容  放在查询，重置 后方
   extra?: React.ReactNode;
   //表单右侧ui
   right?: React.ReactNode;
+  //重置前操作,如果返回false, 则后续不再执行
+  reset?: boolean;
   //onfinish完成后处理表单值,必需返回值,如果返回false, 则后续不再执行
   handleValues?: (values: Record<string, any>) => any;
   //是否在点击重置按钮后自动提交表单重新搜索，默认true
-  reset?: boolean;
-  //重置前操作,如果返回false, 则后续不再执行
   onResetBefore?: () => void | boolean;
-  //数据列表表单属性 antd from props
+  //table表数据 插入antd form，配置
   dataForm?: FormProps;
 }
 
@@ -84,42 +83,35 @@ export interface ProTableProps<Tdata = any>
   request: {
     /** 请求地址方法 */
     url?: string;
+    /** 手动调用发送 table.run */
+    manual?: boolean;
     method?: HttpMethod;
-    /** 请求参数 */
+    /** 请求额外参数 */
     params?: Record<string, any>;
     onBefore?: () => any;
     onSuccess?: (data: any) => any;
   };
   //Table.useTable()实例,  返回状态库，常用方法
   table: TableInstance<Tdata> | null;
-  // rowKey: string | ((record: RecordType, index?: number) => string);
   //antd locale 国际化
   locale?: Record<string, any>;
   //后端数据列表的键名，例如：'data'、'list.data'   {code: 0, data: {  }, message: '11'}, 默认使用的是data
   dataKey?: string;
   //总量的键名，例如：'total'、'list.total'   {code: 0, total: '11'}, 默认使用 total
   totalKey?: string;
-  //是否手动发送请求 为false时手动调用table.run();
-  manual?: boolean;
   //是否不含className
   nostyle?: boolean;
   //antd table columns 支持函数返回一个列数组:参数data api返回数据,  一般使用function 时用于根据data，动态生成列
   columns:
     | ((data: Tdata) => TableColumnType<unknown>[])
     | TableColumnType<unknown>[];
-  //search表单form配置
+  //搜索表单form配置
   form?: FormOptions;
-  //统计提示
+  //统计栏位渲染
   alert?: React.ReactNode | ((data: Tdata) => React.ReactNode);
-  //操作按钮组,独立成一行
+  //功能操作按钮渲染
   toolbar?: React.ReactNode;
-  pageSizeOptions?: number[];
-  pagination?: {
-    showQuickJumper?: boolean;
-    showSizeChanger?: boolean;
-    hideOnSinglePage?: boolean;
-  };
-  loadingDelay?: number;
+  pagination?: PaginationProps;
   //开启后 useStore()会返回 api data数据
   useData?: boolean;
 }

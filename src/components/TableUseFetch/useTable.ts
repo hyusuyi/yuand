@@ -9,19 +9,17 @@ const useTable = (options: UseTableProps = {}) => {
   const tableRef = useRef<TableRef>(null);
 
   if (!tableRef.current) {
-    const useStore = create<TableState>((set) => ({
+    const initState = {
       page: options.page ?? 1,
       size: options.size ?? 10,
-      sorter: options.sorter || {},
+      sorter: options.sorter ?? {},
       search: {},
-      params: {
-        page: options.page ?? 1,
-        size: options.size ?? 10,
-        sorter: options.sorter || {},
-        form: {},
-      },
+      params: {},
       data: {},
       ready: false,
+    };
+    const useStore = create<TableState>((set) => ({
+      ...initState,
       setState(values = {}) {
         set(values);
       },
@@ -47,6 +45,9 @@ const useTable = (options: UseTableProps = {}) => {
           return sorter.order;
         }
         return null;
+      },
+      resetStore() {
+        useStore.getState().setState(initState);
       },
       update: () => update((v) => v + 1),
     };

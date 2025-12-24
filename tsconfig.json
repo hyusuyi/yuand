@@ -4,7 +4,6 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "baseUrl": "./",
     "jsx": "react-jsx",
     "declaration": true,
     "skipLibCheck": true,
@@ -12,12 +11,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "yu-component": [
-        "./src/index.ts"
-      ],
-      "yu-component/*": [
-        "./src/*.ts"
-      ]
-    },
+      "*": ["./*"],
+      "@/*": ["./src/*"]
+    }
   }
 }
