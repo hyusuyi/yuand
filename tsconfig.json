@@ -14,5 +14,16 @@
       "*": ["./*"],
       "@/*": ["./src/*"]
     }
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "es",
+    "lib",
+    "**/__tests__",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/test",
+    "vitest.setup.ts",
+    "vitest.config.ts"
+  ]
 }
