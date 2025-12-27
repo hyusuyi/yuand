@@ -120,13 +120,22 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   });
 
   const { dataSource, total, column, renderAlert } = useMemo(() => {
+    const isFunctionColumns = typeof columns === 'function';
+    let column = isFunctionColumns ? columns(data as any) : columns;
+    if (!isFunctionColumns) {
+      column.map(col => {
+        if (col.sorter) {
+          col.sortOrder = sorter && sorter.field === col.dataIndex ? sorter.order : null;
+        }
+      });
+    }
     return {
-      column: typeof columns === "function" ? columns(data as any) : columns,
+      column,
       dataSource: getDataSource<T>(data as any, dataKey),
       renderAlert: typeof alert === "function" ? alert(data as any) : alert,
       total: getTotal(totalKey, data),
     };
-  }, [columns, data, dataKey, totalKey]);
+  }, [columns, data, dataKey, totalKey, sorter]);
 
   const onSearch = () => {
     if (formItems) {
@@ -175,7 +184,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
     return () => {
       table.resetStore();
     };
-  }, [table]);
+  }, []);
 
   const onFinish = (values: Record<string, unknown>) => {
     if (formHandleValues) {

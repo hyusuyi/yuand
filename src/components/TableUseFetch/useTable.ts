@@ -39,27 +39,11 @@ const useTable = (options: UseTableProps = {}) => {
         });
       },
       reset: () => {},
-      sortOrder(key: string) {
-        const sorter = useStore.getState().sorter;
-        if (sorter && sorter.field === key) {
-          return sorter.order;
-        }
-        return null;
-      },
       resetStore() {
         useStore.getState().setState(initState);
       },
       update: () => update((v) => v + 1),
     };
-    useStore.subscribe((state, prevState) => {
-      if (
-        state.sorter !== prevState.sorter &&
-        state.sorter?.order !== prevState.sorter?.order
-      ) {
-        tableRef.current = { ...tableRef.current };
-        update((v) => v + 1);
-      }
-    });
   }
   return [tableRef.current];
 };

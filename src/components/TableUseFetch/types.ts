@@ -37,8 +37,6 @@ export interface TableInstance<TData = any> {
   refresh: () => void;
   //重置所有参数并搜索,仅在传入form时生效
   reset: () => void;
-  //排序  table.sortOrder('列名')
-  sortOrder: (key: string) => any;
   update: () => void;
   //重置store状态
   resetStore: () => void;
@@ -126,7 +124,6 @@ export interface TableRef {
   clear: () => void;
   refresh: () => void;
   reset: () => void;
-  sortOrder: (key: string) => "ascend" | "descend" | null;
   //重置store状态
   resetStore: () => void;
   update: () => void;
