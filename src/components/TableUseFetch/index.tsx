@@ -2,13 +2,7 @@ import type { ProTableProps, ProTableConfigOptions } from "./types";
 import { useShallow } from "zustand/react/shallow";
 import { useEffect, useMemo } from "react";
 import { Table, Form, Button, Space, type PaginationProps } from "antd";
-import {
-  getDataSource,
-  getQuery,
-  getTotal,
-  formatDate,
-  removeEmpty,
-} from "../../utils/table";
+import { getDataSource, getQuery, getTotal, formatDate, removeEmpty } from "../../utils/table";
 import { isObject } from "../../utils/util";
 import useFetch from "../../hooks/useFetch";
 import useX from "../../hooks/useX";
@@ -50,7 +44,7 @@ const DEFAULT_CONFIG: DefaultConfig = {
   },
 } as const;
 
-const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
+const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>): JSX.Element => {
   const {
     classNames = DEFAULT_CONFIG.classNames,
     styles = DEFAULT_CONFIG.styles,
@@ -120,10 +114,10 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   });
 
   const { dataSource, total, column, renderAlert } = useMemo(() => {
-    const isFunctionColumns = typeof columns === 'function';
+    const isFunctionColumns = typeof columns === "function";
     let column = isFunctionColumns ? columns(data as any) : columns;
     if (!isFunctionColumns) {
-      column.map(col => {
+      column.map((col) => {
         if (col.sorter) {
           col.sortOrder = sorter && sorter.field === col.dataIndex ? sorter.order : null;
         }
@@ -148,9 +142,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   };
   const onReset = () => {
     setState({
-      size:
-        (pagination?.pageSizeOptions?.[0] as number) ??
-        ProTable.pageSizeOptions[0],
+      size: (pagination?.pageSizeOptions?.[0] as number) ?? ProTable.pageSizeOptions[0],
       sorter: {},
     });
     if (formItems) {
@@ -230,21 +222,10 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   };
 
   return (
-    <div
-      className={classNames?.root ?? DEFAULT_CONFIG.classNames.root}
-      style={styles.root}
-    >
+    <div className={classNames?.root ?? DEFAULT_CONFIG.classNames.root} style={styles.root}>
       {!!formItems && (
-        <div
-          className={classNames?.form ?? DEFAULT_CONFIG.classNames.form}
-          style={styles.form}
-        >
-          <Form
-            form={table.form}
-            layout="inline"
-            onFinish={onFinish}
-            {...otherFormProps}
-          >
+        <div className={classNames?.form ?? DEFAULT_CONFIG.classNames.form} style={styles.form}>
+          <Form form={table.form} layout="inline" onFinish={onFinish} {...otherFormProps}>
             {formTitle && <Form.Item>{formTitle}</Form.Item>}
             {formItems}
             <Form.Item>
@@ -262,17 +243,10 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
           {formRight}
         </div>
       )}
-      <div
-        className={classNames?.table ?? DEFAULT_CONFIG.classNames.table}
-        style={styles.table}
-      >
+      <div className={classNames?.table ?? DEFAULT_CONFIG.classNames.table} style={styles.table}>
         {toolbar && <div style={styles.toolbar}>{toolbar}</div>}
         {renderAlert}
-        {!!dataForm ? (
-          <Form {...dataForm}>{renderTable()}</Form>
-        ) : (
-          renderTable()
-        )}
+        {!!dataForm ? <Form {...dataForm}>{renderTable()}</Form> : renderTable()}
       </div>
     </div>
   );

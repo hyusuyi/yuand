@@ -3,9 +3,7 @@ import { rq } from "../fetch";
 import type { HttpMethod } from "../fetch";
 import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
 
-type UseQueryOptionsPartial<TData> = Partial<
-  Pick<UseQueryOptions<TData>, "queryFn">
-> &
+type UseQueryOptionsPartial<TData> = Partial<Pick<UseQueryOptions<TData>, "queryFn">> &
   Omit<UseQueryOptions<TData>, "queryFn">;
 interface Options<TData> extends UseQueryOptionsPartial<TData> {
   method?: HttpMethod;
@@ -17,9 +15,7 @@ interface Options<TData> extends UseQueryOptionsPartial<TData> {
   onLogout?: () => void;
 }
 
-function useQueryHooks<TData = unknown>(
-  options: Options<TData>
-): UseQueryResult<TData> {
+function useQueryHooks<TData = unknown>(options: Options<TData>): UseQueryResult<TData> {
   const {
     queryKey,
     ignoreError,

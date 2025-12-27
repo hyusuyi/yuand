@@ -7,13 +7,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useContext } from "react";
 import { Table, Form, Button, Space, type PaginationProps } from "antd";
 import { isObject } from "../../utils/util";
-import {
-  getDataSource,
-  getQuery,
-  getTotal,
-  formatDate,
-  removeEmpty,
-} from "../../utils/table";
+import { getDataSource, getQuery, getTotal, formatDate, removeEmpty } from "../../utils/table";
 import useX from "../../hooks/useX";
 import useTable from "./useTable";
 import "./style.css";
@@ -53,7 +47,7 @@ const DEFAULT_CONFIG: DefaultConfig = {
   },
 } as const;
 
-const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
+const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>): JSX.Element => {
   const {
     request = {},
     classNames = DEFAULT_CONFIG.classNames,
@@ -74,8 +68,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   } = props;
 
   const { lang } = useContext(I18nContext);
-  pagination.showTotal ??= (total: number) =>
-    `${t("共", lang)} ${total} ${t("条记录", lang)}`;
+  pagination.showTotal ??= (total: number) => `${t("共", lang)} ${total} ${t("条记录", lang)}`;
   pagination.pageSizeOptions ??= ProTable.pageSizeOptions;
 
   const {
@@ -148,10 +141,10 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   }, [data, useData]);
 
   const { dataSource, total, column, renderAlert } = useMemo(() => {
-    const isFunctionColumns = typeof columns === 'function';
+    const isFunctionColumns = typeof columns === "function";
     let column = isFunctionColumns ? columns(data as any) : columns;
     if (!isFunctionColumns) {
-      column.map(col => {
+      column.map((col) => {
         if (col.sorter) {
           col.sortOrder = sorter && sorter.field === col.dataIndex ? sorter.order : null;
         }
@@ -176,9 +169,7 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   };
   const onReset = () => {
     setState({
-      size:
-        (pagination?.pageSizeOptions?.[0] as number) ??
-        ProTable.pageSizeOptions[0],
+      size: (pagination?.pageSizeOptions?.[0] as number) ?? ProTable.pageSizeOptions[0],
       sorter: {},
     });
     if (formItems) {
@@ -263,21 +254,10 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
   };
 
   return (
-    <div
-      className={classNames?.root ?? DEFAULT_CONFIG.classNames.root}
-      style={styles.root}
-    >
+    <div className={classNames?.root ?? DEFAULT_CONFIG.classNames.root} style={styles.root}>
       {!!formItems && (
-        <div
-          className={classNames?.form ?? DEFAULT_CONFIG.classNames.form}
-          style={styles.form}
-        >
-          <Form
-            form={table.form}
-            layout={layout}
-            onFinish={onFinish}
-            {...otherFormProps}
-          >
+        <div className={classNames?.form ?? DEFAULT_CONFIG.classNames.form} style={styles.form}>
+          <Form form={table.form} layout={layout} onFinish={onFinish} {...otherFormProps}>
             {formTitle && <Form.Item>{formTitle}</Form.Item>}
             {formItems}
             <Form.Item>
@@ -295,17 +275,10 @@ const ProTable = <T extends Record<string, any>>(props: ProTableProps<T>) => {
           {formRight}
         </div>
       )}
-      <div
-        className={classNames?.table ?? DEFAULT_CONFIG.classNames.table}
-        style={styles.table}
-      >
+      <div className={classNames?.table ?? DEFAULT_CONFIG.classNames.table} style={styles.table}>
         {toolbar && <div style={styles.toolbar}>{toolbar}</div>}
         {renderAlert}
-        {!!dataForm ? (
-          <Form {...dataForm}>{renderTable()}</Form>
-        ) : (
-          renderTable()
-        )}
+        {!!dataForm ? <Form {...dataForm}>{renderTable()}</Form> : renderTable()}
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
-export const isObject = (oj: unknown) =>
-  Object.prototype.toString.call(oj) === "[object Object]";
+export const isObject = (oj: unknown) => Object.prototype.toString.call(oj) === "[object Object]";
 export const isFunction = (oj: unknown) =>
   Object.prototype.toString.call(oj) === "[object Function]";
 
@@ -10,13 +9,7 @@ const DEFAULT_CODE_KEY = "code" as const;
 const DEFAULT_DATA_KEY = "data" as const;
 const DEFAULT_MESSAGE_KEY = "message" as const;
 const DEFAULT_CONTENT_TYPE = "application/json;charset=UTF-8";
-const BLOB_CONTENT_TYPES = [
-  "stream",
-  "excel",
-  "download",
-  "blob",
-  "octet-stream",
-] as const;
+const BLOB_CONTENT_TYPES = ["stream", "excel", "download", "blob", "octet-stream"] as const;
 const METHODS_WITHOUT_BODY = ["GET", "HEAD"] as const;
 
 export type HttpMethod =
@@ -35,13 +28,7 @@ export type HttpMethod =
   | "head"
   | "options"
   | undefined;
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonObject
-  | JsonArray;
+export type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
 export type JsonObject = { [key: string]: JsonValue };
 export type JsonArray = JsonValue[];
 export type RequestData = unknown;
@@ -80,10 +67,7 @@ export interface HttpClientConfig {
   onLogout?: (error: HttpError) => void | Promise<void>;
   onSuccess?: (data: any) => void | Promise<void>;
   /** 请求拦截器 */
-  requestInterceptor?: (
-    url: string,
-    options: RequestInit
-  ) => Promise<void> | void;
+  requestInterceptor?: (url: string, options: RequestInit) => Promise<void> | void;
   /** 响应拦截器 */
   responseInterceptor?: <T>(
     response: HttpResponse<T>
@@ -170,45 +154,27 @@ export class HttpClient {
     this.configure = { ...this.configure, ...configure };
   }
 
-  get<T = any>(
-    url: string,
-    options?: Omit<RequestOptions, "method">
-  ): Promise<T> {
+  get<T = any>(url: string, options?: Omit<RequestOptions, "method">): Promise<T> {
     return this.request<T>(url, { ...options, method: "GET" });
   }
 
-  post<T = any>(
-    url: string,
-    options?: Omit<RequestOptions, "method">
-  ): Promise<T> {
+  post<T = any>(url: string, options?: Omit<RequestOptions, "method">): Promise<T> {
     return this.request<T>(url, { ...options, method: "POST" });
   }
 
-  put<T = any>(
-    url: string,
-    options?: Omit<RequestOptions, "method">
-  ): Promise<T> {
+  put<T = any>(url: string, options?: Omit<RequestOptions, "method">): Promise<T> {
     return this.request<T>(url, { ...options, method: "PUT" });
   }
 
-  delete<T = any>(
-    url: string,
-    options?: Omit<RequestOptions, "method">
-  ): Promise<T> {
+  delete<T = any>(url: string, options?: Omit<RequestOptions, "method">): Promise<T> {
     return this.request<T>(url, { ...options, method: "DELETE" });
   }
 
-  patch<T = any>(
-    url: string,
-    options?: Omit<RequestOptions, "method">
-  ): Promise<T> {
+  patch<T = any>(url: string, options?: Omit<RequestOptions, "method">): Promise<T> {
     return this.request<T>(url, { ...options, method: "PATCH" });
   }
 
-  async request<T = any>(
-    url: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
+  async request<T = any>(url: string, options: RequestOptions = {}): Promise<T> {
     const {
       json,
       params,
@@ -233,9 +199,7 @@ export class HttpClient {
       }
 
       // 设置请求方法
-      const method = (
-        options.method ?? this.configure.defaultMethod
-      ).toUpperCase() as HttpMethod;
+      const method = (options.method ?? this.configure.defaultMethod).toUpperCase() as HttpMethod;
       fetchOptions.method = method;
 
       // 设置请求头
@@ -265,11 +229,7 @@ export class HttpClient {
       }
 
       // 发起请求(带超时控制)
-      const response = await this.fetchWithTimeout(
-        fullUrl,
-        fetchOptions,
-        timeout
-      );
+      const response = await this.fetchWithTimeout(fullUrl, fetchOptions, timeout);
 
       // 检查 HTTP 状态码
       if (!response.ok) {
@@ -282,18 +242,11 @@ export class HttpClient {
       }
 
       // 处理响应
-      const result = await this.handleResponse<T>(
-        response,
-        returnData,
-        ignoreError,
-        onSuccess
-      );
+      const result = await this.handleResponse<T>(response, returnData, ignoreError, onSuccess);
 
       // 执行响应拦截器
       if (this.configure.responseInterceptor && isObject(result)) {
-        return (await this.configure.responseInterceptor(
-          result as HttpResponse<T>
-        )) as T;
+        return (await this.configure.responseInterceptor(result as HttpResponse<T>)) as T;
       }
 
       return result;
@@ -318,9 +271,7 @@ export class HttpClient {
     const baseUrl = this.configure.baseUrl;
     if (!baseUrl) return url;
 
-    const normalizedBase = baseUrl.endsWith("/")
-      ? baseUrl.slice(0, -1)
-      : baseUrl;
+    const normalizedBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
 
     return normalizedBase + normalizedUrl;
@@ -359,9 +310,7 @@ export class HttpClient {
 
     // 如果是函数,执行获取
     if (configureHeaders && isFunction(configureHeaders)) {
-      baseHeaders = await (
-        configureHeaders as () => HeadersInit | Promise<HeadersInit>
-      )();
+      baseHeaders = await (configureHeaders as () => HeadersInit | Promise<HeadersInit>)();
     } else if (configureHeaders) {
       baseHeaders = configureHeaders as HeadersInit;
     }
@@ -403,12 +352,7 @@ export class HttpClient {
       return response;
     } catch (error: any) {
       if (error.name === "AbortError") {
-        throw new HttpError(
-          `Request timeout after ${timeout}ms`,
-          undefined,
-          undefined,
-          408
-        );
+        throw new HttpError(`Request timeout after ${timeout}ms`, undefined, undefined, 408);
       }
       throw error;
     } finally {
@@ -425,17 +369,14 @@ export class HttpClient {
     ignoreError: boolean,
     onSuccess?: (data: any) => void
   ): Promise<T> {
-    const contentType =
-      response.headers.get("content-type")?.toLowerCase() ?? "";
+    const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
     const { codeKey, dataKey, messageKey, codes } = this.configure;
     const successCodes = codes.success ?? DEFAULT_SUCCESS_CODES;
     const logoutCodes = codes.logout ?? DEFAULT_LOGOUT_CODES;
     const ignoreErrorCodes = codes.ignoreError ?? [];
 
     // 处理文件下载(Blob)
-    if (
-      this.configure.blobContentTypes.some((type) => contentType.includes(type))
-    ) {
+    if (this.configure.blobContentTypes.some((type) => contentType.includes(type))) {
       const blob = await response.blob();
       const filename = this.extractFilename(response.headers);
 
@@ -541,9 +482,7 @@ export class HttpClient {
  * const response = await http.get('/api/download');
  * downloadfile(response);
  */
-export function downloadfile(
-  response: BlobResponse | { data: Blob; filename?: string }
-): void {
+export function downloadfile(response: BlobResponse | { data: Blob; filename?: string }): void {
   const { data, filename } = response;
 
   if (!(data instanceof Blob)) {

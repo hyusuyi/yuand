@@ -1,10 +1,5 @@
-import type {
-  FormInstance,
-  TableColumnType,
-  TableProps,
-  FormProps,
-  PaginationProps,
-} from "antd";
+import type { TableProps, ColumnType, TablePaginationConfig } from "antd/es/table";
+import type { FormInstance, FormProps } from "antd/es/form";
 import type { HttpMethod } from "../../fetch";
 import type { UseBoundStore, StoreApi } from "zustand";
 import type { GetQueryProps } from "../../utils/table";
@@ -62,8 +57,7 @@ interface FormOptions extends Omit<FormProps, "form" | "title"> {
   dataForm?: FormProps;
 }
 
-export interface ProTableProps<Tdata = any>
-  extends Omit<TableProps<Tdata>, "columns"> {
+export interface ProTableProps<Tdata = any> extends Omit<TableProps<Tdata>, "columns"> {
   classNames?: {
     root?: string;
     form?: string;
@@ -98,16 +92,14 @@ export interface ProTableProps<Tdata = any>
   //是否不含className
   nostyle?: boolean;
   //antd table columns 支持函数返回一个列数组:参数data api返回数据,  一般使用function 时用于根据data，动态生成列
-  columns:
-    | ((data: Tdata) => TableColumnType<unknown>[])
-    | TableColumnType<unknown>[];
+  columns: ((data: Tdata) => ColumnType[]) | ColumnType[];
   //搜索表单form配置
   form?: FormOptions;
   //统计栏位渲染
   alert?: React.ReactNode | ((data: Tdata) => React.ReactNode);
   //功能操作按钮渲染
   toolbar?: React.ReactNode;
-  pagination?: PaginationProps;
+  pagination?: TablePaginationConfig;
   loadingDelay?: number;
 }
 

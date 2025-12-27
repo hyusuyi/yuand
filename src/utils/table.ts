@@ -6,14 +6,10 @@ export interface GetQueryProps {
   params: Record<string, unknown>;
 }
 
-const isObject = (oj: unknown) =>
-  Object.prototype.toString.call(oj) === "[object Object]";
+const isObject = (oj: unknown) => Object.prototype.toString.call(oj) === "[object Object]";
 
 //获取key对应的数据
-export const getDataSource = <T extends Record<string, unknown>>(
-  data: T,
-  key: string
-): T[] => {
+export const getDataSource = <T extends Record<string, unknown>>(data: T, key: string): T[] => {
   if (Array.isArray(data)) return data;
   if (key.includes(".")) {
     const keys = key.split(".");
@@ -70,11 +66,7 @@ export const getTotal = <T = unknown>(key: string, data: T): number => {
   return (data[key] as number) || 0;
 };
 
-const formatValue = (
-  key: string,
-  data: Record<string, any>,
-  format: string = "YYYY-MM-DD"
-) => {
+const formatValue = (key: string, data: Record<string, any>, format: string = "YYYY-MM-DD") => {
   const it = data[key];
   if (Array.isArray(it) && it.length > 0) {
     data[key] = it.map((item: any) => item.format(format));
@@ -107,10 +99,7 @@ export const formatDate = (
 export const removeEmpty = (data: Record<string, any>) => {
   if (!isObject(data)) return data;
   Object.keys(data).forEach((key: string) => {
-    if (
-      data[key] === "" ||
-      (Array.isArray(data[key]) && data[key].toString() === "")
-    ) {
+    if (data[key] === "" || (Array.isArray(data[key]) && data[key].toString() === "")) {
       delete data[key];
     }
   });
